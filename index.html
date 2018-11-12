@@ -2,11 +2,164 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>胡悦勇博客</title>
-<body>
-  <div id="root"></div>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="css/love.css" />
+    <script type="text/javascript" src="./js/jquery.min.js"></script>
+    <script type="text/javascript" src="./js/jscex.min.js"></script>
+    <script type="text/javascript" src="./js/jscex-parser.js"></script>
+    <script type="text/javascript" src="./js/jscex-jit.js"></script>
+    <script type="text/javascript" src="./js/jscex-builderbase.min.js"></script>
+    <script type="text/javascript" src="./js/jscex-async.min.js"></script>
+    <script type="text/javascript" src="./js/jscex-async-powerpack.min.js"></script>
+    <script type="text/javascript" src="./js/functions.js" charset="utf-8"></script>
+    <script type="text/javascript" src="./js/love.js" charset="utf-8"></script>
+    <title>许文君嫁给我吧</title>
+</head>
+
+<body class="pink">
+    <div id="main">
+        <div id="wrap">
+            <div id="text">
+                <div id="code">
+                    <p class="say">小君君： </p>
+                    <p class="say textindet">遇见你，是我遇到最幸运的事情。爱上你，是我做的最幸福的事情。我不想再送你回家了，我们一起回家吧！</p>
+                    <p class="say textindet2">--胡悦勇</p>
+                </div>
+            </div>
+            <canvas id="canvas" width="1100" height="680"></canvas>
+        </div>
+
+    </div>
+    <audio id="audio" autoplay="autoplay" preload="auto" loop>
+        <source src="../mp3/love.mp3" type="audio/mpeg" />
+    </audio>
+
+    <script>
+        (function () {
+            var canvas = $('#canvas');
+
+            if (!canvas[0].getContext) {
+
+                return false;
+            }
+
+            var width = canvas.width();
+            var height = canvas.height();
+
+            canvas.attr("width", width);
+            canvas.attr("height", height);
+
+            var opts = {
+                seed: {
+                    x: width / 2 - 20,
+                    color: "rgb(190, 26, 37)",
+                    scale: 2
+                },
+                branch: [
+                    [535, 680, 570, 250, 500, 200, 30, 100, [
+                        [540, 500, 455, 417, 340, 400, 13, 100, [
+                            [450, 435, 434, 430, 394, 395, 2, 40]
+                        ]],
+                        [550, 445, 600, 356, 680, 345, 12, 100, [
+                            [578, 400, 648, 409, 661, 426, 3, 80]
+                        ]],
+                        [539, 281, 537, 248, 534, 217, 3, 40],
+                        [546, 397, 413, 247, 328, 244, 9, 80, [
+                            [427, 286, 383, 253, 371, 205, 2, 40],
+                            [498, 345, 435, 315, 395, 330, 4, 60]
+                        ]],
+                        [546, 357, 608, 252, 678, 221, 6, 100, [
+                            [590, 293, 646, 277, 648, 271, 2, 80]
+                        ]]
+                    ]]
+                ],
+                bloom: {
+                    num: 700,
+                    width: 1080,
+                    height: 650,
+                },
+                footer: {
+                    width: 1200,
+                    height: 5,
+                    speed: 10,
+                }
+            }
+
+
+            var tree = new Tree(canvas[0], width, height, opts);
+            var seed = tree.seed;
+            var foot = tree.footer;
+            var hold = 0;
+
+
+
+
+
+            var growAnimate = eval(Jscex.compile("async", function () {
+                do {
+                    tree.grow();
+                    $await(Jscex.Async.sleep(10));
+                } while (tree.canGrow());
+            }));
+
+            var flowAnimate = eval(Jscex.compile("async", function () {
+                do {
+                    tree.flower(2);
+                    $await(Jscex.Async.sleep(10));
+                } while (tree.canFlower());
+            }));
+
+            var moveAnimate = eval(Jscex.compile("async", function () {
+                tree.snapshot("p1", 240, 0, 610, 680);
+                while (tree.move("p1", 500, 0)) {
+                    foot.draw();
+                    $await(Jscex.Async.sleep(10));
+                }
+                foot.draw();
+                tree.snapshot("p2", 500, 0, 610, 680);
+
+                // 会有闪烁不得意这样做, (＞﹏＜)
+                canvas.parent().css("background", "url(" + tree.toDataURL('image/png') + ")");
+                canvas.css("background", "#ef6a8a");
+                $await(Jscex.Async.sleep(100));
+                canvas.css("background", "none");
+            }));
+
+            var jumpAnimate = eval(Jscex.compile("async", function () {
+                var ctx = tree.ctx;
+                while (true) {
+                    tree.ctx.clearRect(0, 0, width, height);
+                    tree.jump();
+                    foot.draw();
+                    $await(Jscex.Async.sleep(25));
+                }
+            }));
+
+            var textAnimate = eval(Jscex.compile("async", function () {
+                $("#code").show().typewriter();
+
+            }));
+
+            var runAsync = eval(Jscex.compile("async", function () {
+                $await(growAnimate());
+                $await(flowAnimate());
+                $await(moveAnimate());
+
+                textAnimate().start();
+
+                $await(jumpAnimate());
+            }));
+
+            runAsync().start();
+        })();
+
+        $(function () {
+            $('#audio')[0].volume = 0
+        })
+    </script>
+
 </body>
+
 </html>
